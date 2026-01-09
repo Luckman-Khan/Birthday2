@@ -26,6 +26,11 @@
       background-color: transparent !important;
     }
 
+    /* Hide app until ready */
+    .app-hidden {
+      visibility: hidden;
+    }
+
     @media (orientation: landscape) {
       .portrait-only { display: none; }
       .landscape-message { display: flex; }
@@ -43,8 +48,8 @@
     Please rotate to portrait mode 📱
   </div>
 
-  <!-- App -->
-  <div class="portrait-only relative w-full h-screen overflow-hidden">
+  <!-- App (hidden initially) -->
+  <div id="app" class="portrait-only relative w-full h-screen overflow-hidden app-hidden">
 
     <!-- Background -->
     <img
@@ -59,52 +64,67 @@
   </div>
 
   <script>
-    /* Papers with intentional offsets + rotations
-       paper4 is DOUBLE sized
-    */
     const papers = [
-      { src: './assets/paper1.png', z: 5, x: 0,   y: -90,   scale: 1.1, rotation: -4 },
-      { src: './assets/paper2.png', z: 4, x: -28, y: 90, scale: 1.1, rotation: 6  }, //
+      { src: './assets/paper1.png', z: 5, x: 0,   y: -90, scale: 1.1, rotation: -4 },
+      { src: './assets/paper2.png', z: 4, x: -28, y: 90,  scale: 1.1, rotation: 6  },
       { src: './assets/paper3.png', z: 3, x: 40,  y: 62,  scale: 1.1, rotation: -7 },
-      { src: './assets/paper4.png', z: 2, x: -50, y: -26,  scale: 1.9, rotation: 5  }, // 🔥 big paper
+      { src: './assets/paper4.png', z: 2, x: -50, y: -26, scale: 1.9, rotation: 5  },
       { src: './assets/paper5.png', z: 1, x: 14,  y: -95, scale: 1.4, rotation: -6 }
     ];
 
     const container = document.getElementById('papers-container');
+    const app = document.getElementById('app');
 
     let activePaper = null;
     let startX = 0;
     let startY = 0;
 
-    papers.forEach(p => {
-      const img = document.createElement('img');
+    /* 🔑 Preload all paper images first */
+    function preloadImages(srcs) {
+      return Promise.all(
+        srcs.map(src => new Promise(resolve => {
+          const img = new Image();
+          img.src = src;
+          img.onload = resolve;
+          img.onerror = resolve;
+        }))
+      );
+    }
 
-      img.src = p.src;
-      img.style.position = 'absolute';
-      img.style.top = '50%';
-      img.style.left = '50%';
-      img.style.width = '40%';
-      img.style.zIndex = p.z;
+    preloadImages(papers.map(p => p.src)).then(() => {
+      // Create papers ONLY after preload
+      papers.forEach(p => {
+        const img = document.createElement('img');
 
-      img.style.willChange = 'transform';
-      img.style.backfaceVisibility = 'hidden';
-      img.style.transformOrigin = 'center center';
+        img.src = p.src;
+        img.style.position = 'absolute';
+        img.style.top = '50%';
+        img.style.left = '50%';
+        img.style.width = '40%';
+        img.style.zIndex = p.z;
 
-      img.baseTransform =
-        `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) rotate(${p.rotation}deg) scale(${p.scale})`;
+        img.style.willChange = 'transform';
+        img.style.backfaceVisibility = 'hidden';
+        img.style.transformOrigin = 'center center';
 
-      img.style.transform = img.baseTransform;
+        img.baseTransform =
+          `translate(-50%, -50%) translate(${p.x}px, ${p.y}px) rotate(${p.rotation}deg) scale(${p.scale})`;
 
-      img.addEventListener('pointerdown', e => {
-        e.preventDefault();
-        activePaper = img;
-        startX = e.clientX;
-        startY = e.clientY;
+        img.style.transform = img.baseTransform;
 
-        img.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))';
+        img.addEventListener('pointerdown', e => {
+          e.preventDefault();
+          activePaper = img;
+          startX = e.clientX;
+          startY = e.clientY;
+          img.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.3))';
+        });
+
+        container.appendChild(img);
       });
 
-      container.appendChild(img);
+      // 🔥 Reveal app ONLY after papers are ready
+      app.classList.remove('app-hidden');
     });
 
     document.addEventListener('pointermove', e => {
@@ -119,7 +139,6 @@
 
     document.addEventListener('pointerup', () => {
       if (!activePaper) return;
-
       activePaper.style.filter = '';
       activePaper = null;
     });
