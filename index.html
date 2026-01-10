@@ -120,6 +120,11 @@ let activePaper = null;
 let startX = 0, startY = 0;
 let fireworksStarted = false;
 
+/* 👉 PINCH STATE (ADDED) */
+let pointers = new Map();
+let startDistance = 0;
+let startScale = 1;
+
 /* ---------------- DRAG ---------------- */
 
 function endDrag(e) {
@@ -239,24 +244,61 @@ preload(papers.map(p => p.src)).then(() => {
 
     img.addEventListener('pointerdown', e => {
       e.preventDefault();
+      img.setPointerCapture(e.pointerId);
       activePaper = img;
       startX = e.clientX;
       startY = e.clientY;
-      img.setPointerCapture(e.pointerId);
+
+      pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+
+      if (pointers.size === 2) {
+        const pts = [...pointers.values()];
+        startDistance = Math.hypot(
+          pts[0].x - pts[1].x,
+          pts[0].y - pts[1].y
+        );
+        startScale = img.scale;
+      }
+
       if (p.trigger) startFireworks();
     });
 
     img.addEventListener('pointermove', e => {
-      if (!activePaper) return;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      activePaper.style.transform =
-        `${activePaper.baseTransform()} translate(${dx}px,${dy}px) scale(1.04)`;
+      if (!pointers.has(e.pointerId)) return;
+      pointers.set(e.pointerId, { x:e.clientX, y:e.clientY });
+
+      if (pointers.size === 1 && activePaper) {
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+        activePaper.style.transform =
+          `${activePaper.baseTransform()} translate(${dx}px,${dy}px) scale(1.04)`;
+      }
+
+      if (pointers.size === 2) {
+        const pts = [...pointers.values()];
+        const d = Math.hypot(
+          pts[0].x - pts[1].x,
+          pts[0].y - pts[1].y
+        );
+        img.scale = Math.min(3, Math.max(0.5, startScale * (d / startDistance)));
+        img.style.transform = img.baseTransform();
+      }
     });
 
-    img.addEventListener('pointerup', endDrag);
-    img.addEventListener('pointercancel', endDrag);
-    img.addEventListener('lostpointercapture', endDrag);
+    img.addEventListener('pointerup', e => {
+      pointers.delete(e.pointerId);
+      if (pointers.size === 0) endDrag(e);
+    });
+
+    img.addEventListener('pointercancel', () => {
+      pointers.clear();
+      endDrag();
+    });
+
+    img.addEventListener('lostpointercapture', () => {
+      pointers.clear();
+      endDrag();
+    });
 
     container.appendChild(img);
   });
