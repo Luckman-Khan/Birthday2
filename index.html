@@ -85,9 +85,12 @@
 
 <div id="app" class="relative w-full h-screen overflow-hidden">
 
+  <!-- BACKGROUND (hidden initially) -->
   <img
+    id="bg"
     src="./assets/background.jpg"
     class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+    style="opacity:0"
     alt="Background"
   />
 
@@ -114,16 +117,13 @@ const colors = [
 /* ---------------- STATE ---------------- */
 
 const container = document.getElementById('papers-container');
-
 let activePaper = null;
 let fireworksStarted = false;
 
-// pinch
 let pointers = new Map();
 let startDistance = 0;
 let startScale = 1;
 
-// drag offset
 let offsetX = 0;
 let offsetY = 0;
 
@@ -237,7 +237,7 @@ papers.forEach(p => {
       startScale = img.scale;
     }
 
-    img.update(8); // lift only
+    img.update(8);
 
     if (p.trigger) startFireworks();
   });
@@ -275,6 +275,11 @@ papers.forEach(p => {
   });
 
   container.appendChild(img);
+});
+
+/* 🔑 reveal background AFTER papers are painted */
+requestAnimationFrame(() => {
+  document.getElementById('bg').style.opacity = '1';
 });
 </script>
 
