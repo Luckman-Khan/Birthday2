@@ -86,10 +86,12 @@ img {
 
 <div id="app" class="relative w-full h-screen overflow-hidden">
 
-  <!-- BACKGROUND (NO SRC INITIALLY) -->
+  <!-- BACKGROUND (FIXED COVERAGE) -->
   <img
     id="bg"
+    src="./assets/background.jpg"
     class="absolute inset-0 w-full h-full object-cover pointer-events-none"
+    style="width:100%; height:100%;"
     alt="Background"
   />
 
@@ -273,11 +275,6 @@ papers.forEach(p => {
   });
 
   container.appendChild(img);
-});
-
-/* ✅ load background ONLY AFTER papers exist */
-requestAnimationFrame(() => {
-  document.getElementById('bg').src = './assets/background.jpg';
 });
 </script>
 
