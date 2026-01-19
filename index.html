@@ -119,11 +119,11 @@
     /* ---------------- CONFIG ---------------- */
 
     const papers = [
-      { src: './assets/paper1.png', z: 5, x: 0, y: -10, scale: 1.5, r: -4 },
-      { src: './assets/paper2.png', z: 4, x: -30, y: 40, scale: 1.6, r: 8 },
-      { src: './assets/paper3.png', z: 3, x: 35, y: 30, scale: 1.7, r: -7 },
-      { src: './assets/paper4.png', z: 2, x: -40, y: -30, scale: 1.6, r: 5 },
-      { src: './assets/paper5.png', z: 1, x: 10, y: 10, scale: 1.8, r: -10, trigger: true }
+      { src: './assets/paper1.png', z: 5, x: 0, y: 0, scale: 1.5, r: -4 },
+      { src: './assets/paper2.png', z: 4, x: -15, y: 20, scale: 1.6, r: 8 },
+      { src: './assets/paper3.png', z: 3, x: 15, y: -10, scale: 1.6, r: -7 },
+      { src: './assets/paper4.png', z: 2, x: -20, y: -20, scale: 1.6, r: 5 },
+      { src: './assets/paper5.png', z: 1, x: 10, y: 10, scale: 1.7, r: -10, trigger: true }
     ];
 
     const colors = [
@@ -238,11 +238,11 @@
         img.style.left = '50%';
         img.style.top = '50%';
         // Responsive width: 100% on mobile, smaller on desktop to look natural
-        img.style.width = isDesktop ? '45vw' : '90%';
+        img.style.width = isDesktop ? '25vw' : '70%';
         img.style.zIndex = p.z;
 
         // Spread papers more on desktop to cover screen
-        const spreadFactor = isDesktop ? 2.2 : 1.1;
+        const spreadFactor = isDesktop ? 1.3 : 1;
 
         img.baseX = p.x * spreadFactor;
         img.baseY = p.y * spreadFactor;
